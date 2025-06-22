@@ -1,0 +1,87 @@
+
+        # Hugging face pipeline
+        from transformers import pipeline
+        from langchain.llms import HuggingFacePipeline
+
+
+
+        sentiment_pipeline = pipeline(
+            "sentiment-analysis",
+            model="finiteautomata/bertweet-base-sentiment-analysis",
+            tokenizer="finiteautomata/bertweet-base-sentiment-analysis",
+            device=0 
+        )
+
+        huggingface_pipeline = HuggingFacePipeline(sentiment_pipeline)
+        logger.info("[bold green]LLM and HuggingFace pipeline initialized successfully.[/bold green]")
+
+        # Create prompt templates
+        from langchain.prompts import PromptTemplate
+        logger.info("[bold cyan]Creating prompt templates...[/bold cyan]")
+
+        template = """
+        You are an expert in emotional analysis. Given a context, a question, and a sentiment analysis result, provide a detailed answer.
+        Context: {context}
+
+        Sentiment analysis result: {sentiment}
+
+        Answer:
+
+        """
+        prompt_template = PromptTemplate(
+            input_variables=["context", "sentiment"],	
+            template=template
+        )
+
+        logger.info("[bold green]Prompt templates created successfully.[/bold green]")
+
+        from langchain.chains import LLMChain
+        logger.info("[bold cyan]Initializing LLMChain...[/bold cyan]")
+        llm_chain = LLMChain(
+            llm=llm,
+            prompt=prompt_template
+        )
+
+        logger.info("[bold green] Setting up retriever [/bold green]")
+        retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+        logger.info("[bold green]Retriever set up successfully.[/bold green]")
+
+        # Get context from the vectorstore
+        logger.info("[bold cyan]Retrieving context from vectorstore...[/bold cyan]")
+        question = "¿Cómo se siente Marianela al darse cuenta de que Pablo podría dejar de necesitarla si recupera la vista?"
+
+        logger.info(f"[bold cyan]Retrieving context for question: {question}[/bold cyan]")
+        context = retriever.get_relevant_documents(question, k=1)
+
+        if not context:
+            logger.error("[bold red]No context found for the question.[/bold red]")
+            return
+        
+        logger.info("[bold green]Context retrieved successfully.[/bold green]")
+        # Run the chatbot with the retrieved context
+
+        # Analizar sentimiento del contexto
+        context_text = context[0].page_content if hasattr(context[0], "page_content") else str(context[0])
+        sentiment_result = huggingface_pipeline(context_text)
+        logger.info(f"[bold green]Sentiment analysis result: {sentiment_result}[/bold green]")
+
+        logger.info("[bold cyan]Running the chatbot...[/bold cyan]")
+
+        response = llm_chain.run(
+            {
+                "context": context_text,
+                "question": question,
+                "sentiment": sentiment_result
+            }
+        )
+
+        logger.info(f"[bold green]Chatbot response: {response}[/bold green]")
+        logger.info("[bold green]Chatbot-emociones application started successfully.[/bold green]")
+
+
+    except Exception as e:
+        logger.error(f"[bold red]An error occurred during startup: {e}[/bold red]")
+        return     
+
+
+langchain==0.0.305
