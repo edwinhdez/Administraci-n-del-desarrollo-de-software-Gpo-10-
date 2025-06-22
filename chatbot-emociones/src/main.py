@@ -12,7 +12,6 @@ from pipeline.retriever_manager import RetrieverManager
 from pipeline.llm_chain_wrapper import LLMChainWrapper
 from pipeline.prompt_manager import PromptManager
 from pipeline.sentiment_analyzer import SentimentAnalyzer
-from utils.secrets import openai_key
 from pipeline.aichat import GradioChat
 
 #ignrorewarnings
@@ -39,7 +38,7 @@ def main():
         if not openai_api_key:
             logger.error("[bold red]OPENAI_API_KEY no encontrado en las variables de entorno.[/bold red]")
             #return
-        openai_api_key = openai_key
+
         if not openai_api_key:
             logger.error("[bold red]OPENAI_API_KEY is not set.[/bold red]")
             return
