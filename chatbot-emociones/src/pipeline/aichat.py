@@ -124,7 +124,7 @@ class GradioChat:
     
         demo.launch(share=True)
 
-    def launch(self):
+    def launch_and_load_pdf(self):
         with gr.Blocks(title="LLM RAG Chatbot Emociones") as demo:
             gr.Markdown("""
             <style>
@@ -166,6 +166,21 @@ class GradioChat:
                 font-size: 0.98em;
                 margin-bottom: 4px;
             }
+                        /* Cambia el color de fondo de los textboxes */
+            input[type="text"], textarea {
+                background-color: #e0eaff !important;
+                border: 1.5px solid #2563eb !important;
+                color: #1e293b !important;
+            }
+            /* Cambia el color del botón principal */
+            #send-btn button, .gr-button-primary {
+                background-color: #2563eb !important;
+                color: #fff !important;
+                border: none !important;
+            }
+            #send-btn button:hover, .gr-button-primary:hover {
+                background-color: #1d4ed8 !important;
+            }
             </style>
             <h2 style="color:#ffffff;">🤖 LLM RAG Chatbot Emociones</h2>
             <p>Haz preguntas y conversa con el chatbot. El historial se muestra en el mismo panel. Puedes cargar un documento por URL para enriquecer el contexto.</p>
@@ -183,6 +198,93 @@ class GradioChat:
             send_btn.click(
                 chat_wrapper,
                 inputs=[question, state, file_url],
+                outputs=[chat_output, state]
+            )
+
+        demo.launch(share=True)
+
+    def launch(self):
+        with gr.Blocks(title="LLM RAG Chatbot Emociones") as demo:
+            gr.Markdown("""
+            <style>
+            /* Fuerza el color azul en el botón Enviar */
+            #send-btn button, 
+            #send-btn > button, 
+            .gr-button-primary, 
+            button[data-testid="button-element"], 
+            [id^="send-btn"] button, 
+            [class*="primary"] {
+                background-color: #2563eb !important;
+                color: #fff !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+            #send-btn button:hover, 
+            #send-btn > button:hover, 
+            .gr-button-primary:hover, 
+            button[data-testid="button-element"]:hover, 
+            [id^="send-btn"] button:hover, 
+            [class*="primary"]:hover {
+                background-color: #1d4ed8 !important;
+                color: #fff !important;
+            }
+            /* Resto de tu CSS... */
+            .chat-container {
+                background: #f5f7fa;
+                border-radius: 12px;
+                padding: 20px;
+                border: 1px solid #d1d5db;
+                margin-bottom: 16px;
+            }
+            .bubble {
+                background: #e0eaff;
+                border-radius: 15px;
+                padding: 10px 15px;
+                display: inline-block;
+                border: 1px solid #b3c6ff;
+                margin-top: 8px;
+                margin-bottom: 8px;
+                max-width: 90%;
+            }
+            .question {
+                font-weight: bold;
+                font-size: 1.1em;
+                color: #2d3748;
+                margin-bottom: 4px;
+            }
+            .context {
+                color: #4a5568;
+                font-size: 0.98em;
+                margin-bottom: 4px;
+            }
+            .context-tooltip {
+                text-decoration: underline dotted;
+                cursor: help;
+                color: #4a5568;
+                font-size: 0.98em;
+                margin-bottom: 4px;
+            }
+            input[type="text"], textarea {
+                background-color: #e0eaff !important;
+                border: 1.5px solid #2563eb !important;
+                color: #1e293b !important;
+            }
+            </style>
+            <h2 style="color:#ffffff;">🤖 LLM RAG Chatbot Emociones</h2>
+            <p>Haz preguntas y conversa con el chatbot. El historial se muestra en el mismo panel.</p>
+            """)
+            chat_output = gr.HTML(label="Conversación", elem_classes="chat-container")
+            state = gr.State()
+            with gr.Row():
+                question = gr.Textbox(lines=2, label="Pregunta", placeholder="Escribe tu pregunta aquí...")
+            send_btn = gr.Button("Enviar", elem_id="send-btn", variant="primary")
+
+            def chat_wrapper(q, h):
+                return self.chat(q, h, None)
+
+            send_btn.click(
+                chat_wrapper,
+                inputs=[question, state],
                 outputs=[chat_output, state]
             )
 

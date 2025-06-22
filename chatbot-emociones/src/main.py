@@ -1,3 +1,12 @@
+#ignrorewarnings
+import warnings
+# Ignorar todos los LangChainDeprecationWarning
+warnings.filterwarnings(
+    "ignore",
+    category=UserWarning,
+    message=".*LangChainDeprecationWarning.*"
+)
+
 from loguru import logger
 from dotenv import load_dotenv
 import os
@@ -14,14 +23,6 @@ from pipeline.prompt_manager import PromptManager
 from pipeline.sentiment_analyzer import SentimentAnalyzer
 from pipeline.aichat import GradioChat
 
-#ignrorewarnings
-import warnings
-# Ignorar todos los LangChainDeprecationWarning
-warnings.filterwarnings(
-    "ignore",
-    category=UserWarning,
-    message=".*LangChainDeprecationWarning.*"
-)
 
 RECREATE_CHROMA_DB = True
 
