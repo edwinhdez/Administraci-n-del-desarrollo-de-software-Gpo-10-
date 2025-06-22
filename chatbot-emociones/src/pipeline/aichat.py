@@ -36,9 +36,14 @@ class GradioChat:
         context_text = context.page_content if hasattr(context, "page_content") else str(context)
         # Agrega la pregunta y respuesta al historial
         history = history or []
+        # Tooltip para el contexto
+        safe_context = context_text.replace('\n', ' ').replace('"', '&quot;')
+        tooltip_context = (
+            f"<span class='context-tooltip' title=\"{safe_context}\">Contexto</span>"
+        )
         history.append((
             question,
-            f"<div class='context'>{file_info}Contexto:<br>{context_text}</div>"
+            f"<div class='context'>{file_info}{tooltip_context}</div>"
             f"<div class='bubble'>Respuesta:<br>{response}</div>"
         ))
         chat_text = ""
@@ -57,9 +62,9 @@ class GradioChat:
             background: #181c24;
             border-radius: 12px;
             padding: 20px;
-            min-height: 350px;
-            max-height: 400px;
-            overflow-y: auto;
+            /* min-height: 350px; */
+            /* max-height: 400px; */
+            /* overflow-y: auto; */
             border: 1px solid #23272f;
             margin-bottom: 16px;
             color: #f1f1f1;
@@ -82,6 +87,13 @@ class GradioChat:
             margin-bottom: 4px;
         }
         .context {
+            color: #bfc9d1;
+            font-size: 0.98em;
+            margin-bottom: 4px;
+        }
+        .context-tooltip {
+            text-decoration: underline dotted;
+            cursor: help;
             color: #bfc9d1;
             font-size: 0.98em;
             margin-bottom: 4px;
@@ -143,6 +155,13 @@ class GradioChat:
                 margin-bottom: 4px;
             }
             .context {
+                color: #4a5568;
+                font-size: 0.98em;
+                margin-bottom: 4px;
+            }
+            .context-tooltip {
+                text-decoration: underline dotted;
+                cursor: help;
                 color: #4a5568;
                 font-size: 0.98em;
                 margin-bottom: 4px;
