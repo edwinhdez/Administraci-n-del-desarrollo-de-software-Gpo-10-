@@ -21,7 +21,8 @@ class ChromaDBManager:
         """
 
         logger.info("[cyan]Initializing Chroma DB Manager...[/cyan]")
-        self.embeddings_model_name = "paraphrase-MiniLM-L6-v2"
+        self.embeddings_model_name = "paraphrase-multilingual-MiniLM-L12-v2" 
+        #self.embeddings_model_name = "paraphrase-MiniLM-L6-v2"
         self.path = path
         self.recreate_chroma_db = recreate_chroma_db
         self.batch_size = batch_size
@@ -54,18 +55,22 @@ class ChromaDBManager:
         # Procesar en lotes si es necesario
         if len(documents) > self.batch_size:
             logger.info(f"[yellow]Processing documents in batches of {self.batch_size}...[/yellow]")
-            all_vectorstores = []
-            for i, docs_batch in enumerate(batch(documents, self.batch_size)):
-                vectorstore = self.get_chroma_db(
-                    embeddings=embeddings,
-                    documents=docs_batch,
-                    recreate_chroma_db=(self.recreate_chroma_db if i == 0 else False),  # Solo el primer batch recrea la BD
-                    collection_name="default_collection"
-                )
-                vectorstore.persist()
-                all_vectorstores.append(vectorstore)
+            embeddings = SentenceTransformerEmbeddings(model_name=self.embeddings_model_name)
+            # Crea el vectorstore solo con el primer batch
+            first_batch = documents[:self.batch_size]
+            vectorstore = self.get_chroma_db(
+                embeddings=embeddings,
+                documents=first_batch,
+                recreate_chroma_db=self.recreate_chroma_db,
+                collection_name="default_collection"
+            )
+            # Agrega los siguientes batches
+            for docs_batch in batch(documents[self.batch_size:], self.batch_size):
+                texts = [doc.page_content for doc in docs_batch]
+                vectorstore.add_texts(texts)
+            vectorstore.persist()
             logger.success("[bold green]All batches processed and persisted successfully.[/bold green]")
-            return all_vectorstores
+            return vectorstore
         else:
             vectorstore = self.get_chroma_db(
                 embeddings=embeddings,
@@ -111,6 +116,20 @@ class ChromaDBManager:
             logger.info("[green]Loading Chroma DB[/green]")
             return Chroma(
                 persist_directory=self.path,
-                embedding_function=embeddings or SentenceTransformerEmbeddings(self.embeddings_model_name),
+                embedding_function=embeddings or SentenceTransformerEmbeddings(model_name= self.embeddings_model_name),
                 collection_name=collection_name 
             )
+
+    def load_chroma_db(self, collection_name="default_collection"):
+        """
+        Carga un vectorstore de Chroma desde el directorio persistente.
+
+        Returns:
+            Un vectorstore de Chroma.
+        """
+        logger.info("[cyan]Loading Chroma DB from persistent directory...[/cyan]")
+        return Chroma(
+            persist_directory=self.path,
+            collection_name=collection_name,
+            embedding_function=SentenceTransformerEmbeddings(model_name = self.embeddings_model_name)
+        )
